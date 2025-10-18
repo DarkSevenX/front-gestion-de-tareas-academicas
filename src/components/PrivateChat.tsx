@@ -29,6 +29,7 @@ export default function PrivateChat() {
   const [users, setUsers] = useState<UserItem[]>([]);
   const [selectedUser, setSelectedUser] = useState<UserItem | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [unread, setUnread] = useState<Record<number, number>>({});
   const [newMessage, setNewMessage] = useState('');
   const socket = getSocket();
   const endRef = useRef<HTMLDivElement | null>(null);
@@ -70,9 +71,15 @@ export default function PrivateChat() {
         user: { id: 0, username: data.user, role: data.role },
         recipient: { id: data.recipientId, username: '' },
       };
-      // Si estamos en el chat con esta persona, añadir
+      // Si estamos en el chat con esta persona, añadir, sino marcar como pendiente
       if (selectedUser && data.user === selectedUser.username) {
         setMessages((prev) => [...prev, incoming]);
+      } else {
+        // Marcar como no leído para el remitente (usamos senderId si viene)
+        const senderId = data.senderId ?? null;
+        if (senderId) {
+          setUnread(prev => ({ ...prev, [senderId]: (prev[senderId] || 0) + 1 }));
+        }
       }
     };
 
@@ -89,7 +96,7 @@ export default function PrivateChat() {
       }
     };
 
-    socket.on('private-message', handleIncoming);
+  socket.on('private-message', handleIncoming);
     socket.on('private-message-sent', handleSent);
 
     return () => {
@@ -111,19 +118,32 @@ export default function PrivateChat() {
     // Opcional: también persistir vía API (ya lo hace el servidor al recibir socket)
   };
 
+  // Limpiar unread cuando se selecciona un usuario
+  const handleSelectUser = (u: UserItem) => {
+    setSelectedUser(u);
+    setUnread(prev => {
+      const copy = { ...prev };
+      delete copy[u.id];
+      return copy;
+    });
+  };
+
   return (
     <div className="flex gap-4">
       <div className="w-1/4 bg-white p-4 rounded-lg shadow-md">
         <h3 className="font-bold mb-2">Usuarios</h3>
         <ul className="space-y-2">
           {users.map(u => (
-            <li key={u.id}>
+            <li key={u.id} className="relative">
               <button
-                onClick={() => setSelectedUser(u)}
+                onClick={() => handleSelectUser(u)}
                 className={`w-full text-left p-2 rounded ${selectedUser?.id === u.id ? 'bg-blue-100' : ''}`}
               >
                 {u.username} <span className="text-xs text-gray-500">({u.role})</span>
               </button>
+              {unread[u.id] ? (
+                <span className="absolute top-1 right-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full">{unread[u.id]}</span>
+              ) : null}
             </li>
           ))}
         </ul>
