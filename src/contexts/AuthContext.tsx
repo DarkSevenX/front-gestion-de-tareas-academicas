@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import apiClient from '../lib/api';
 import { jwtDecode } from "jwt-decode";
+import { disconnectSocket, getSocket } from '../lib/socket';
 
 // Interfaces para el payload del token y el usuario
 interface DecodedToken {
@@ -40,7 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUser({
             id: decodedToken.id,
             username: decodedToken.username,
-            role: decodedToken.role.toLowerCase(),
+            role: decodedToken.role.toLowerCase() as 'alumno' | 'tutor',
           });
           apiClient.defaults.headers.common['token'] = token;
         } else {
@@ -69,10 +70,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser({
           id: userPayload.id,
           username: userPayload.username,
-          role: userPayload.role.toLowerCase(),
+          role: userPayload.role.toLowerCase() as 'alumno' | 'tutor',
         });
         // Añadimos el token a las cabeceras por defecto para futuras peticiones
         apiClient.defaults.headers.common['token'] = token;
+        // Reconectar el socket con el nuevo token
+        disconnectSocket();
+        getSocket();
       }
     } catch (error: any) {
       console.error('Error during sign in:', error);
@@ -104,6 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
     localStorage.removeItem('token');
     delete apiClient.defaults.headers.common['token'];
+    disconnectSocket();
   };
 
   return (

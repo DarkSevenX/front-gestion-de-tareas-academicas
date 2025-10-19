@@ -3,12 +3,12 @@ import { io, Socket } from 'socket.io-client';
 
 const URL = 'http://localhost:8000'; // La URL de tu backend
 
-let socket: Socket;
+let socket: Socket | null = null;
 
 export const getSocket = (): Socket => {
   if (!socket) {
     const token = localStorage.getItem('token');
-    
+
     socket = io(URL, {
       auth: {
         token: token
@@ -21,4 +21,11 @@ export const getSocket = (): Socket => {
     });
   }
   return socket;
+};
+
+export const disconnectSocket = (): void => {
+  if (socket) {
+    socket.disconnect();
+    socket = null;
+  }
 };
