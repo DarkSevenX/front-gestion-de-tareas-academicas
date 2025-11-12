@@ -8,7 +8,7 @@ const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: 'simback',
-  description: 'Created with simback',
+  description: 'Created with simback+',
   icons: {
     icon: [
       {
