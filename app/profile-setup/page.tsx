@@ -58,7 +58,7 @@ export default function ProfileSetupPage() {
     try {
       setIsSubmitting(true)
       const fullName = `${firstName} ${lastName}`.trim()
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'} profile/complete-profile`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}profile/complete-profile`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
