@@ -65,7 +65,7 @@ export function RegisterView({ onRegister, onSwitchToLogin }: RegisterViewProps)
 
   const handleGoogleLogin = () => {
     // Redirigir al endpoint de Google OAuth del backend
-    window.location.href = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/auth/google`
+    window.location.href = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/'}auth/google`
   }
 
   return (
